@@ -12,6 +12,7 @@ dados brutos e os carrega no PostgreSQL usando
 | **2** | Transformação | Regras A1–A6, contadores e contrato coerente com o esquema |
 | **3** | Carga | Inserção PostgreSQL, idempotência e reconciliação |
 | **4** | Testes e validação | Testes automatizados e consultas executadas no PostgreSQL |
+| **5** | Entrega e documentação | Registro do uso de IA, histórico dos PRs e evidências finais |
 
 ## Preparação
 
@@ -155,3 +156,10 @@ reconciliacao: soma_valor_itens_origem=311228.75 soma_valor_itens_destino=311228
 reconciliacao: divergentes_origem=238 divergentes_destino=238
 reconciliacao: status=ok
 ```
+
+## Parte 5 — Entrega final e uso de IA
+
+O documento [ENTREGA.md](ENTREGA.md) reúne os links dos pull requests por etapa,
+as evidências de execução e os itens finais da entrega. O arquivo
+[COMO_USEI_IA.md](COMO_USEI_IA.md) descreve as contribuições da IA, as decisões
+feitas durante o desenvolvimento, os retrabalhos e as validações realizadas.
