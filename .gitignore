@@ -1,0 +1,23 @@
+# Dados brutos extraidos da API / CSV (gerados durante a execucao)
+brutos/
+
+# Variaveis de ambiente e segredos (nunca versionar senhas)
+.env
+.env.*
+
+# Arquivos temporarios e cache do Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.coverage
+
+# Arquivos locais de banco SQLite (se vier a testar)
+*.db
+*.sqlite
+*.sqlite3
+
+# Arquivos de sistema / editor
+.DS_Store
+Thumbs.db
