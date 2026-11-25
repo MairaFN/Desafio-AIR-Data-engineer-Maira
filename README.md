@@ -77,6 +77,21 @@ iguais nas duas execuções. A saída é texto simples, com contagens por tabela
 soma de `valor_itens` na origem e no destino, diferença e total de pedidos
 divergentes.
 
+## Testes e validação no PostgreSQL
+
+Execute os testes automatizados sem precisar de um banco PostgreSQL:
+
+```powershell
+python -m pytest
+```
+
+Para conferir as contagens, a soma de `valor_itens` e a regra do campo
+`divergente` no banco carregado:
+
+```powershell
+psql -U postgres -d verdejar -f .\consultas_validacao.sql
+```
+
 ### Evidência de duas execuções consecutivas
 
 As duas execuções foram concluídas com `reconciliacao: status=ok` e produziram
