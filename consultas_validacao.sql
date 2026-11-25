@@ -1,4 +1,3 @@
--- Confere as contagens atuais das quatro tabelas de destino.
 SELECT 'clientes' AS tabela, COUNT(*) AS registros FROM clientes
 UNION ALL
 SELECT 'produtos', COUNT(*) FROM produtos
@@ -8,7 +7,6 @@ UNION ALL
 SELECT 'itens_pedido', COUNT(*) FROM itens_pedido
 ORDER BY tabela;
 
--- Compara valor_itens armazenado com a soma dos itens de cada pedido.
 WITH itens_por_pedido AS (
     SELECT
         p.id AS pedido_id,
@@ -33,7 +31,6 @@ SELECT
 FROM pedidos AS p
 JOIN itens_por_pedido AS i ON i.pedido_id = p.id;
 
--- Confere divergente com a regra: diferenca absoluta maior que um centavo.
 WITH itens_por_pedido AS (
     SELECT
         p.id AS pedido_id,

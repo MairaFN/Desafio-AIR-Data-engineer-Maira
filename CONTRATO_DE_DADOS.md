@@ -53,7 +53,7 @@ As etapas de transformação e carga implementam as regras deste contrato em
 | `produto_id` | `INTEGER` | `NOT NULL`; chave primária | CSV `produtos.csv`, campo `produto_id`. Converter para inteiro e rejeitar valor ausente. |
 | `nome` | `TEXT` | `NOT NULL` | CSV `produtos.csv`, campo `nome`. Preservar o nome. |
 | `categoria` | `TEXT` | `NOT NULL` | CSV `produtos.csv`, campo `categoria`. Preservar a categoria. |
-| `preco_base` | `NUMERIC(10,2)` | `NOT NULL` | CSV `produtos.csv`, campo `preco_base`. Converter para valor decimal com duas casas (**A4**). |
+| `preco_base` | `NUMERIC(10,2)` | `NOT NULL` | CSV `produtos.csv`, campo `preco_base`. Converter para valor decimal com duas casas (**A4**); como o `DictReader` entrega texto, contabilizar em `valores_convertidos`. |
 
 ### `pedidos`
 
@@ -63,7 +63,7 @@ As etapas de transformação e carga implementam as regras deste contrato em
 | `cliente_id` | `INTEGER` | `NOT NULL`; chave estrangeira para `clientes.id` | API `/pedidos`, campo `cliente_id`. Preservar o identificador e validar a referência ao cliente. |
 | `data_pedido` | `DATE` | `NOT NULL` | API `/pedidos`, campo `data_pedido`. **A3:** aceitar `AAAA-MM-DD` e `DD/MM/AAAA`, normalizar para ISO e, na carga, converter para `datetime.date`; contar cada data válida em `datas_convertidas`. |
 | `status` | `TEXT` | `NOT NULL` | API `/pedidos`, campo `status`. Preservar o status recebido. |
-| `valor_total` | `NUMERIC(12,2)` | `NOT NULL` | API `/pedidos`, campo `valor_total`. **A4:** aceitar número ou texto com vírgula decimal, converter para decimal com duas casas e contar os valores normalizados em `valores_convertidos`. |
+| `valor_total` | `NUMERIC(12,2)` | `NOT NULL` | API `/pedidos`, campo `valor_total`. **A4:** aceitar número ou texto com vírgula decimal e normalizar para duas casas; contar em `valores_convertidos` quando o valor de origem for texto. |
 | `valor_itens` | `NUMERIC(12,2)` | `NOT NULL` | Calculado no ETL: soma de `quantidade × preco_unitario` das linhas do pedido, com aritmética decimal e duas casas. **A6.** |
 | `divergente` | `BOOLEAN` | `NOT NULL`; `DEFAULT FALSE` | Calculado no ETL. **A6:** gravar `True` quando `abs(valor_total - valor_itens) > 0.01`, senão `False`; a carga converte o indicador para `bool`; contar pedidos marcados com `True` em `divergentes`. |
 
@@ -75,7 +75,7 @@ As etapas de transformação e carga implementam as regras deste contrato em
 | `linha` | `INTEGER` | `NOT NULL`; parte da chave primária | Calculado no ETL: posição sequencial da linha dentro de `itens`, começando em `1` e preservando a ordem da API. |
 | `produto_id` | `INTEGER` | `NOT NULL`; chave estrangeira para `produtos.produto_id` | API `/pedidos`, campo `produto_id` dentro de cada objeto em `itens`. Validar a referência ao produto. |
 | `quantidade` | `INTEGER` | `NOT NULL` | API `/pedidos`, campo `quantidade` dentro de cada objeto em `itens`. Converter para inteiro. |
-| `preco_unitario` | `NUMERIC(10,2)` | `NOT NULL` | API `/pedidos`, campo `preco_unitario` dentro de cada objeto em `itens`. Converter para decimal com duas casas (**A4**). |
+| `preco_unitario` | `NUMERIC(10,2)` | `NOT NULL` | API `/pedidos`, campo `preco_unitario` dentro de cada objeto em `itens`. Converter para decimal com duas casas (**A4**); contar em `valores_convertidos` quando o valor de origem for texto. |
 
 ## Armadilhas de qualidade A1–A6
 
@@ -84,15 +84,16 @@ As etapas de transformação e carga implementam as regras deste contrato em
 | **A1** | E-mail nulo, ausente ou vazio vira `NULL`; contabilizar em `emails_nulos`. | `clientes.email` |
 | **A2** | Sigla de estado em caixa mista é convertida para maiúsculas; contabilizar valores alterados em `estados_padronizados`. | `clientes.estado` |
 | **A3** | Datas `AAAA-MM-DD` e `DD/MM/AAAA` são normalizadas para ISO; a carga converte para `datetime.date`. Contabilizar cada data válida de pedido em `datas_convertidas`. | `clientes.cadastro_em`, `pedidos.data_pedido` |
-| **A4** | Valores monetários são arredondados com `Decimal` para duas casas; a carga vincula `Decimal` ao PostgreSQL. `valor_total` também aceita texto com vírgula decimal. `valores_convertidos` conta as conversões nos três campos monetários. | `produtos.preco_base`, `pedidos.valor_total`, `itens_pedido.preco_unitario` |
+| **A4** | Valores monetários são arredondados com `Decimal` para duas casas; a carga vincula `Decimal` ao PostgreSQL. `valor_total` também aceita texto com vírgula decimal. `valores_convertidos` conta os campos monetários recebidos como texto e convertidos para número; valores de origem já numéricos são normalizados, mas não incrementam esse contador. | `produtos.preco_base`, `pedidos.valor_total`, `itens_pedido.preco_unitario` |
 | **A5** | Pedidos repetidos entre páginas são deduplicados pelo `id`, preservando a primeira ocorrência; contabilizar descartes em `repetidos_descartados`. | `pedidos.id` e suas linhas em `itens_pedido` |
 | **A6** | `valor_itens` é calculado pela soma das linhas; `divergente` vale `TRUE` apenas quando a diferença absoluta para `valor_total` excede `0.01`; contabilizar em `divergentes`. | `pedidos.valor_itens`, `pedidos.divergente` |
 
 Os contadores de transformação são calculados sobre os registros efetivamente
 considerados para carga: `datas_convertidas` conta cada data válida de pedido
 normalizada, independentemente do formato de entrada; `valores_convertidos`
-conta cada valor convertido nos campos monetários indicados,
-independentemente do formato original. Pedidos
+conta cada valor monetário de origem textual convertido nos campos indicados.
+Valores de origem numérica também são normalizados para duas casas, mas não
+incrementam esse contador. Pedidos
 duplicados descartados não voltam a entrar nesses contadores nem em
 `divergentes`.
 `repetidos_descartados` conta cada ocorrência repetida removida após a

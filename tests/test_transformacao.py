@@ -54,6 +54,10 @@ def test_a4_valor_com_virgula_vira_numero():
     assert valor == 125.84
     assert converteu is True
 
+    valor_numerico, converteu_numerico = converter_valor(94.34)
+    assert valor_numerico == 94.34
+    assert converteu_numerico is False
+
 
 def test_a5_pedidos_duplicados_mantem_primeiro():
     primeiro = {"id": 7, "status": "entregue"}
