@@ -4,6 +4,15 @@ Pipeline em Python que extrai clientes e pedidos da API Verdejar, transforma os
 dados brutos e os carrega no PostgreSQL usando
 `insumos_verdejar/schema.sql`.
 
+## Visão geral das partes
+
+| Parte | Etapa | O que demonstra |
+|---|---|---|
+| **1** | Extração | Paginação da API, leitura do CSV e preservação dos dados brutos |
+| **2** | Transformação | Regras A1–A6, contadores e contrato coerente com o esquema |
+| **3** | Carga | Inserção PostgreSQL, idempotência e reconciliação |
+| **4** | Testes e validação | Testes automatizados e consultas executadas no PostgreSQL |
+
 ## Preparação
 
 1. Instale as dependências:
@@ -15,8 +24,11 @@ dados brutos e os carrega no PostgreSQL usando
 2. Crie o banco `verdejar` e aplique o esquema uma vez:
 
    ```powershell
-   psql -h localhost -p 5432 -U postgres -d verdejar -f .\insumos_verdejar\schema.sql
+   & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -h localhost -p 5432 -U postgres -d verdejar -W -f .\insumos_verdejar\schema.sql
    ```
+
+   No Windows, ajuste o número `18` para a versão instalada do PostgreSQL.
+   A opção `-W` solicita a senha no terminal.
 
 3. Configure a senha do PostgreSQL como variável de ambiente `PGPASSWORD` no
    terminal em que executará o ETL. Não coloque a senha no código nem a versione.
@@ -47,7 +59,7 @@ Invoke-RestMethod "http://127.0.0.1:8000/pedidos?page=1&page_size=100" |
     Select-Object page, total_pages
 ```
 
-## Executar o ETL
+## Executar o pipeline
 
 Com a API em execução e as variáveis do PostgreSQL configuradas:
 
@@ -58,7 +70,22 @@ python -m etl.main
 O fluxo executa extração, transformação, carga e reconciliação. Os registros
 brutos permanecem em `brutos/`.
 
-## Idempotência e transação
+## Parte 1 — Extração e dados brutos
+
+`etl/extracao.py` percorre todas as páginas das rotas `/clientes` e `/pedidos`,
+lê `produtos.csv` com `csv.DictReader` e UTF-8 e salva os três conjuntos em
+`brutos/` antes da transformação. Os arquivos brutos são ignorados pelo Git
+para não versionar dados pessoais.
+
+## Parte 2 — Transformação e contrato
+
+`etl/transformacao.py` aplica A1–A6 sem alterar os registros de entrada.
+`CONTRATO_DE_DADOS.md` descreve as quatro tabelas e as regras de origem e
+destino. O contador `valores_convertidos` inclui valores monetários recebidos
+como texto; os que já chegam numéricos são normalizados para duas casas, mas
+não entram nesse contador.
+
+## Parte 3 — Carga, idempotência e reconciliação
 
 Cada carga executa `TRUNCATE TABLE itens_pedido, pedidos, clientes, produtos
 RESTART IDENTITY` e as inserções na mesma transação PostgreSQL. Os dados são
@@ -77,7 +104,7 @@ iguais nas duas execuções. A saída é texto simples, com contagens por tabela
 soma de `valor_itens` na origem e no destino, diferença e total de pedidos
 divergentes.
 
-## Testes e validação no PostgreSQL
+## Parte 4 — Testes e validação no PostgreSQL
 
 Execute os testes automatizados sem precisar de um banco PostgreSQL:
 
@@ -85,12 +112,16 @@ Execute os testes automatizados sem precisar de um banco PostgreSQL:
 python -m pytest
 ```
 
+Resultado verificado após os ajustes: **14 passed**.
+
 Para conferir as contagens, a soma de `valor_itens` e a regra do campo
 `divergente` no banco carregado:
 
 ```powershell
-psql -U postgres -d verdejar -f .\consultas_validacao.sql
+& "C:\Program Files\PostgreSQL\18\bin\psql.exe" -h localhost -p 5432 -U postgres -d verdejar -W -f .\consultas_validacao.sql
 ```
+
+Substitua `18` pela versão instalada do PostgreSQL no Windows.
 
 Resultado observado: 1.000 clientes, 12 produtos, 5.000 pedidos e 12.455
 itens. A soma calculada foi `311228.75`, sem diferença, e os 238 pedidos
