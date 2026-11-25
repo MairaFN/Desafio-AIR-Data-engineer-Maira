@@ -19,9 +19,9 @@
 
 - **Parte 4 — Testes automatizados e consultas de validação:** `feature/parte-4-testes` — [PR #4](https://github.com/MairaFN/Desafio-AIR-Data-engineer-Maira/pull/4) (merged no commit `1ff5305`).
 
-- **Ajustes posteriores da Parte 4:** commit `0a87164` na branch `feature/parte-4-testes`;
+- **Ajustes posteriores da Parte 4:** commit `0a87164` na branch `feature/parte-4-testes`, incluído como commit anterior na branch da Parte 5.
 
-- **Parte 5 — Documentação final:** `README.md`, `COMO_USEI_IA.md` e `ENTREGA.md`. LINK AQUI
+- **Parte 5 — Documentação final:** branch `feature/parte-5-documentacao`, com `README.md`, `COMO_USEI_IA.md`, `ENTREGA.md`, `.gitignore` e ajustes de documentação em `etl/carga.py` — [abrir formulário para criar o PR da Parte 5](https://github.com/MairaFN/Desafio-AIR-Data-engineer-Maira/compare/desafio-final-maira...feature/parte-5-documentacao?expand=1).
 
 ---
 
