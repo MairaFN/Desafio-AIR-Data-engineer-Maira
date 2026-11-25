@@ -80,7 +80,6 @@ def _booleano_para_carga(valor: Any) -> bool:
 
 
 def configuracao_conexao() -> dict[str, Any]:
-    """Lê a configuração do libpq do ambiente sem incluir senhas no código."""
     try:
         porta = int(os.getenv("PGPORT", "5432"))
     except ValueError as erro:
@@ -97,7 +96,6 @@ def configuracao_conexao() -> dict[str, Any]:
 
 
 def carregar_dados(dados: dict[str, list[dict[str, Any]]]) -> dict[str, Any]:
-    """Substitui o conteúdo das tabelas e reconcilia a carga na mesma transação."""
     produtos = dados["produtos"]
     clientes = dados["clientes"]
     pedidos = dados["pedidos"]

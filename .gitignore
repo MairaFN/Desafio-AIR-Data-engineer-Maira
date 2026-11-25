@@ -4,6 +4,7 @@ brutos/
 # Variaveis de ambiente e segredos (nunca versionar senhas)
 .env
 .env.*
+!.env.example
 
 # Arquivos temporarios e cache do Python
 __pycache__/
@@ -13,7 +14,12 @@ __pycache__/
 .pytest_cache/
 .coverage
 
-# Arquivos locais de banco SQLite (se vier a testar)
+# Ambientes virtuais locais
+/.venv/
+/venv/
+/env/
+
+# Arquivos locais de banco SQLite
 *.db
 *.sqlite
 *.sqlite3
