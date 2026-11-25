@@ -92,6 +92,12 @@ Para conferir as contagens, a soma de `valor_itens` e a regra do campo
 psql -U postgres -d verdejar -f .\consultas_validacao.sql
 ```
 
+Resultado observado: 1.000 clientes, 12 produtos, 5.000 pedidos e 12.455
+itens. A soma calculada foi `311228.75`, sem diferença, e os 238 pedidos
+divergentes foram consistentes com os itens.
+
+![Saída das consultas de validação PostgreSQL](assets/validacao-postgresql.png)
+
 ### Evidência de duas execuções consecutivas
 
 As duas execuções foram concluídas com `reconciliacao: status=ok` e produziram
